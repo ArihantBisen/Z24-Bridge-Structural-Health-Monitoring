@@ -27,47 +27,82 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://z24-bridge-structural-health-monitoring.vercel.app",
+        "*",  # Allow all for demo purposes
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
-# --- Load models on startup ---
-analyzer = None
-models_error = None
+# ============ MODEL LOADING WITH ERROR HANDLING ============
 
 import logging
 from contextlib import asynccontextmanager
 
+# Configure logging
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Global state
+analyzer = None
+startup_error = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup and shutdown events"""
-    global analyzer, models_error
-    # Startup
+    """
+    Async context manager for startup and shutdown events.
+    This ensures proper model loading and error handling.
+    """
+    global analyzer, startup_error
+    
+    # ========== STARTUP ==========
+    logger.info("=" * 70)
+    logger.info("STARTUP: Z24 Bridge SHM Backend")
+    logger.info("=" * 70)
+    
     try:
-        logger.info("Loading models...")
+        logger.info(f"MODELS_DIR: {MODELS_DIR}")
+        logger.info("Initializing BridgeHealthAnalyzer...")
+        
+        # Load models
         analyzer = BridgeHealthAnalyzer(MODELS_DIR)
-        logger.info("✓ Models loaded successfully!")
+        
+        logger.info("✓ WaveNet: LOADED")
+        logger.info("✓ InceptionTime: LOADED")
+        logger.info("✓ MiniRocket: LOADED")
+        logger.info("=" * 70)
+        logger.info("✓ ALL MODELS READY - ACCEPTING PREDICTIONS")
+        logger.info("=" * 70)
+        startup_error = None
+        
     except Exception as e:
-        logger.error(f"✗ Model loading failed: {e}", exc_info=True)
-        models_error = str(e)
+        startup_error = str(e)
+        logger.error("=" * 70)
+        logger.error(f"✗ MODEL LOADING FAILED: {e}")
+        logger.error("=" * 70)
+        logger.error("Stack trace:", exc_info=True)
+        # Don't crash - let app continue so we can see error
     
     yield
     
-    # Shutdown
-    logger.info("Application shutting down...")
+    # ========== SHUTDOWN ==========
+    logger.info("Shutting down application...")
 
-# Update FastAPI app creation:
+# UPDATE FastAPI app initialization - ADD lifespan parameter:
 app = FastAPI(
     title="Z24 Bridge SHM API",
     description="AI-powered structural health monitoring for the Z24 bridge",
     version="1.0.0",
-    lifespan=lifespan  # ← ADD THIS!
+    lifespan=lifespan,  # ← ADD THIS LINE!
 )
-
 
 # ============================================================
 # API Endpoints
@@ -75,12 +110,35 @@ app = FastAPI(
 
 @app.get("/api/health")
 async def health_check():
-    """System health check."""
-    return {
-        "status": "healthy" if analyzer is not None else "degraded",
-        "models_loaded": analyzer is not None,
-        "error": models_error,
-    }
+    """
+    System health check - frontend calls this to verify backend is ready.
+    Returns whether models are loaded and ready for predictions.
+    """
+    if analyzer is None:
+        # Models not loaded yet
+        return {
+            "status": "degraded",
+            "models_ready": False,
+            "error": startup_error or "Models not initialized",
+            "server_time": str(datetime.now()),
+        }
+    
+    try:
+        model_status = analyzer.get_status()
+        return {
+            "status": "healthy",
+            "models_ready": True,
+            "model_status": model_status,
+            "error": None,
+            "server_time": str(datetime.now()),
+        }
+    except Exception as e:
+        return {
+            "status": "degraded",
+            "models_ready": False,
+            "error": str(e),
+            "server_time": str(datetime.now()),
+        }
 
 
 @app.get("/api/experiment/overview")
