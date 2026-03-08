@@ -1,0 +1,16 @@
+{
+  "models": {
+    "MiniRocket": 37.61,
+    "WaveNet_v4": 52.94,
+    "InceptionTime": 57.04
+  },
+  "ensembles": {
+    "WN_MR_LogReg": 57.4,
+    "WN_IT_avg": 61.32,
+    "All3_LogReg": 63.1
+  },
+  "hierarchical": {
+    "group_acc": 83.42,
+    "final_acc": 62.21
+  }
+}
