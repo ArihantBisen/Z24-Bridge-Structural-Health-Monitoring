@@ -35,13 +35,38 @@ app.add_middleware(
 
 # --- Load models on startup ---
 analyzer = None
+models_error = None
 
-@app.on_event("startup")
-async def load_models():
-    global analyzer
-    print("Loading models...")
-    analyzer = BridgeHealthAnalyzer(MODELS_DIR)
-    print("Models ready!")
+import logging
+from contextlib import asynccontextmanager
+
+logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown events"""
+    global analyzer, models_error
+    # Startup
+    try:
+        logger.info("Loading models...")
+        analyzer = BridgeHealthAnalyzer(MODELS_DIR)
+        logger.info("✓ Models loaded successfully!")
+    except Exception as e:
+        logger.error(f"✗ Model loading failed: {e}", exc_info=True)
+        models_error = str(e)
+    
+    yield
+    
+    # Shutdown
+    logger.info("Application shutting down...")
+
+# Update FastAPI app creation:
+app = FastAPI(
+    title="Z24 Bridge SHM API",
+    description="AI-powered structural health monitoring for the Z24 bridge",
+    version="1.0.0",
+    lifespan=lifespan  # ← ADD THIS!
+)
 
 
 # ============================================================
