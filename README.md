@@ -10,15 +10,20 @@ Final Year Capstone Project
 
 This project applies deep learning to the Z24 Bridge dataset for structural health monitoring (SHM). It covers the full pipeline from raw sensor data processing to a real-time web dashboard.
 
+## Notebooks — Open in Colab
+
+| Notebook | Description | Link |
+|----------|-------------|------|
+| 01 — Data Pipeline | Data loading, preprocessing, feature extraction | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ArihantBisen/Z24-Bridge-Structural-Health-Monitoring/blob/main/notebooks/01_DataPipeline.ipynb) |
+| 02 — WaveNet Training | 1D-WaveNet model training & evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ArihantBisen/Z24-Bridge-Structural-Health-Monitoring/blob/main/notebooks/02_WaveNet_Training.ipynb) |
+| 03 — MiniRocket Training | MiniRocket classifier training & evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ArihantBisen/Z24-Bridge-Structural-Health-Monitoring/blob/main/notebooks/03_MiniRocket_Training.ipynb) |
+| 04 — InceptionTime Training | InceptionTime model training & evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ArihantBisen/Z24-Bridge-Structural-Health-Monitoring/blob/main/notebooks/04_InceptionTime_Training.ipynb) |
+| 05 — Lifespan Estimation | Remaining Useful Life (RUL) estimation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ArihantBisen/Z24-Bridge-Structural-Health-Monitoring/blob/main/notebooks/05_Lifespan_Estimation.ipynb) |
+
 ## Repository Structure
 
 ```
 ├── notebooks/          # Jupyter notebooks (ML pipeline, training, evaluation)
-│   ├── 01_DataPipeline.ipynb
-│   ├── 02_WaveNet_Training.ipynb
-│   ├── 03_MiniRocket_Training.ipynb
-│   ├── 04_InceptionTime_Training.ipynb
-│   └── 05_Lifespan_Estimation.ipynb
 ├── figures/            # Generated plots and visualizations
 ├── models/             # Trained model weights (.pth, .pkl)
 └── webapp/             # Real-time web-based analysis platform
