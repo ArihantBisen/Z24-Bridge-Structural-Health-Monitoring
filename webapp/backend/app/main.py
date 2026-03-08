@@ -1,5 +1,6 @@
 """Z24 Bridge SHM — FastAPI Backend."""
 
+import os
 import numpy as np
 from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, HTTPException
@@ -11,7 +12,11 @@ from .ml.inference import BridgeHealthAnalyzer
 from .ml.damage_info import DAMAGE_INFO, T_DESIGN, K_DEGRADE
 
 # --- Configuration ---
-MODELS_DIR = r"C:\Users\Arihant Bisen\Documents\data\models"
+# In Docker: /app/models/  |  Locally: fallback to env var or relative path
+MODELS_DIR = os.environ.get(
+    "MODELS_DIR",
+    str(Path(__file__).parent.parent.parent.parent / "models")
+)
 
 # --- Initialize app ---
 app = FastAPI(
@@ -22,8 +27,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

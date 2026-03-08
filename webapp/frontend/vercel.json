@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://z24-bridge-shm.onrender.com/api/:path*"
+    }
+  ]
+}
