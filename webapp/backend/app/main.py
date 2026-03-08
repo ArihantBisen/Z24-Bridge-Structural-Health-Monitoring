@@ -77,8 +77,9 @@ app = FastAPI(
 async def health_check():
     """System health check."""
     return {
-        "status": "healthy",
-        "models": analyzer.get_status() if analyzer else {},
+        "status": "healthy" if analyzer is not None else "degraded",
+        "models_loaded": analyzer is not None,
+        "error": models_error,
     }
 
 
